@@ -191,7 +191,7 @@ class ResultPage(tk.Frame):
         self.jwdResultLbl.grid(row=0, column=0, sticky="w", padx=(0,0), pady=(4,0))
 
 
-        exportResultAsExcelBtn = tk.Button(self, text="Ergebnisse Exportieren", command=lambda : self.exportResultExcel())
+        exportResultAsExcelBtn = tk.Button(self, text="Ergebnisse Exportieren", command=lambda : print("Export"))
         exportResultAsExcelBtn.grid(row=2, column=2, sticky="w", padx=(0,0), pady=(15,0))
 
         closeAppBtn = tk.Button(self, text="Fertigstellen", command=lambda : self.closeApplication())
@@ -222,5 +222,3 @@ class ResultPage(tk.Frame):
     def closeApplication(self):
         self.guiService.destroy()
 
-app = GuiService()
-app.mainloop()
