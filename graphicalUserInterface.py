@@ -212,13 +212,6 @@ class ResultPage(tk.Frame):
     def displayResults(self):
         pass
 
-    def setResultsDefaultVaules(self):
-        self.werResultLbl["text"] = f"WER: -1"
-        self.cerResultLbl["text"] = f"CER: -1"
-        self.merResultLbl["text"] = f"MER: -1"
-        self.wilResultLbl["text"] = f"WIL: -1"
-        self.jwdResultLbl["text"] = f"Jaro: -1"
-
     def closeApplication(self):
         self.guiService.destroy()
 
