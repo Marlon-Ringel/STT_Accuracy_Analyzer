@@ -24,7 +24,7 @@ class DatabaseService:
              originalSentance TEXT NOT NULL, 
              audioFileName TEXT NOT NULL);
                    
-             CREATE TABLE TestResults
+             CREATE TABLE TranscriptionResults 
              (id INTEGER PRIMARY KEY, 
              originalSentaceId INTEGER NOT NULL, 
              transcript TEXT NOT NULL,

@@ -112,14 +112,14 @@ class TestProgressPage(tk.Frame):
     def __init__(self, pageContainer, guiService):
         tk.Frame.__init__(self, pageContainer)
 
-        self.transcriptionProgressLbl = tk.Label(self, text="Transcription: Pending")
+        self.transcriptionProgressLbl = tk.Label(self, text="Transkription: Ausstehend")
         self.transcriptionProgressLbl.grid(row = 2, column = 0, sticky="w", padx=(10,0), pady=(70,0))
 
         self.transcriptionProgressBarStatus = tk.IntVar()
         self.transcriptionProgressBar = ttk.Progressbar(self, length=1100, variable=self.transcriptionProgressBarStatus)
         self.transcriptionProgressBar.grid(row=3, column=0, columnspan=3, sticky="w", padx=(10,0), pady=(0,30))
 
-        self.analysisProgressLbl = tk.Label(self, text="Analysis: Pending")
+        self.analysisProgressLbl = tk.Label(self, text="Auswertung: Ausstehend")
         self.analysisProgressLbl.grid(row = 4, column = 0, sticky="w", padx=(10,0), pady=(0,0))
 
         self.analysisProgressBarStatus = tk.IntVar()
