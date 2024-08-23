@@ -23,10 +23,16 @@ class GuiService(tk.Tk):
 
         self.showPage(InputPage)
 
+        self.protocol("WM_DELETE_WINDOW", self.closeApplication)  
+
     def showPage(self, pageName):
         page = self.pages[pageName]
         page.initializePage()
         page.tkraise()
+
+    def closeApplication(self):
+        DatabaseService.resetDataBase()
+        self.destroy()
 
 class InputPage(tk.Frame):
     def __init__(self, pageContainer, guiService): 
@@ -247,7 +253,7 @@ class ResultPage(tk.Frame):
         exportResultAsExcelBtn = tk.Button(self, text="Ergebnisse Exportieren", command=lambda : print("Export"))
         exportResultAsExcelBtn.grid(row=2, column=2, sticky="w", padx=(0,0), pady=(15,0))
 
-        closeAppBtn = tk.Button(self, text="Fertigstellen", command=lambda : self.closeApplication())
+        closeAppBtn = tk.Button(self, text="Fertigstellen", command=lambda : self.guiService.closeApplication())
         closeAppBtn.grid(row=3, column=0, sticky="w", padx=(10,0), pady=(60,0))
     
         self.guiService = guiService
@@ -265,6 +271,4 @@ class ResultPage(tk.Frame):
     def displayResults(self):
         pass
 
-    def closeApplication(self):
-        self.guiService.destroy()
 
