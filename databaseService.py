@@ -1,6 +1,7 @@
 import pathlib
 import sqlite3
 import os
+from configurationService import ConfigurationService
 
 class DatabaseService:
     
@@ -53,6 +54,16 @@ class DatabaseService:
         conn.commit()
         conn.close()
     
+    @staticmethod
+    def saveConfiguration(configuration : ConfigurationService):
+        DatabaseService.insertDataIntoDataBase(configuration.getConfigurationAsSqliteQuery())
+
+
+
+
+
+
+
     @staticmethod
     def resetDataBase():
         if os.path.exists(DatabaseService.dataBasePath):

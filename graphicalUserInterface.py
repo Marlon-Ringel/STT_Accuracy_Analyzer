@@ -1,7 +1,9 @@
 import tkinter as tk 
 from tkinter import filedialog
 from tkinter import ttk
-from databasService import DatabaseService
+import threading as th
+from databaseService import DatabaseService
+from configurationService import ConfigurationService
 
 
 class GuiService(tk.Tk):
@@ -67,9 +69,12 @@ class InputPage(tk.Frame):
         customTestDataTsvFilePathSelectionBtn.grid(row=7, column=52, sticky="ew", padx=(15,10), pady=(0,0))
 
         # Start Test Process Button
-        startTestProcessBtn = tk.Button(self, text="Testprozess Starten", command=lambda : self.guiService.showPage(TestProgressPage))
-        startTestProcessBtn.grid_propagate(0)
-        startTestProcessBtn.grid(row=10, column=0, columnspan=10, sticky="w", padx=(10,0), pady=(0,10))
+        self.startTestProcessBtn = tk.Button(self, text="Testprozess Starten", command=lambda : self.validateInput())
+        self.startTestProcessBtn.grid_propagate(0)
+        self.startTestProcessBtn.grid(row=10, column=0, columnspan=10, sticky="w", padx=(10,0), pady=(0,10))
+
+        self.inputValidationLbl = tk.Label(self, text="")
+        self.inputValidationLbl.grid(row=10, column=11, columnspan=20, sticky="w", padx=(0,0), pady=(0,0))
 
         self.guiService = guiService
     
@@ -77,10 +82,56 @@ class InputPage(tk.Frame):
         DatabaseService.resetDataBase()
         DatabaseService.initializeDataBase()
 
+    def validateInput(self):
+        self.toggleStartTestProcessBtnAndMessage()
+        th.Thread(target=self.performValidation, daemon=True).start()
+
+    def performValidation(self):
+        self.removeErrorMessages()
+        config = ConfigurationService(self.subprocessCommandStringInputEtr.get(),
+                                        self.customTestDataAudioFilesPathSelectionEtr.get(),
+                                        self.customTestDataTsvFilePathSelectionEtr.get())
+        if not config.validateConfiguration():
+            self.displayErrorMessages(config.getConfigurationError())
+            self.toggleStartTestProcessBtnAndMessage()
+        else:
+            DatabaseService.saveConfiguration(config)
+            self.guiService.showPage(TestProgressPage)
+
+    def toggleStartTestProcessBtnAndMessage(self):
+        if self.startTestProcessBtn["state"] == "disabled":
+            self.startTestProcessBtn.configure(state="normal")
+            self.inputValidationLbl["text"] = ""
+        else:
+            self.startTestProcessBtn.configure(state="disabled")
+            self.inputValidationLbl["text"] = "Überprüfung der eingegebenen Daten. Bitte Warten …"
+
     def removeErrorMessages(self):
         self.subprocessCommandStringInputErrorLbl["text"] = ""
         self.customTestDataAudioFilesPathSelectionErrorLbl["text"] = ""
         self.customTestDataTsvFilePathSelectionErrorLbl["text"] = ""
+
+    def displayErrorMessages(self, errorList):
+        if errorList[0] == 1:
+            self.updateSubprocessCommandStringInputError("Fehler: Kein Terminal Befehl zum Starten des KI-Modell-Subprozesses eingegeben.")
+
+        if errorList[0] == 2: 
+            self.updateSubprocessCommandStringInputError("Fehler: Der Terminal Befehl zum Starten des KI-Modell-Subprozesses ist fehlerhaft.")
+
+        if errorList[0] == 3:
+            self.updateSubprocessCommandStringInputError("Fehler: Der KI-Modell-Subprozesses ist fehlerhaft.")
+
+        if errorList[1] == 1:
+            self.updateCustomTestDataAudioFilesPathSelectionError("Fehler: Kein Verzeichnis mit MP3-Testdaten ausgewählt.")
+
+        if errorList[1] == 2:
+            self.updateCustomTestDataTsvFilePathSelectionError("Fehler: Keine TSV-Datei ausgewählt")
+
+        if errorList[2] == 1:
+            self.updateCustomTestDataAudioFilesPathSelectionError("Fehler: Der ausgewählte Pfad existiert nicht.")
+
+        if errorList[3] == 1:
+            self.updateCustomTestDataTsvFilePathSelectionError("Fehler: Der ausgewählte Pfad existiert nicht.")  
 
     def updateSubprocessCommandStringInputError(self, errorText):
         self.subprocessCommandStringInputErrorLbl["text"] = errorText
