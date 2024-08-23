@@ -1,6 +1,7 @@
 import tkinter as tk 
 from tkinter import filedialog
 from tkinter import ttk
+from databasService import DatabaseService
 
 
 class GuiService(tk.Tk):
@@ -73,7 +74,8 @@ class InputPage(tk.Frame):
         self.guiService = guiService
     
     def initializePage(self):
-        pass
+        DatabaseService.resetDataBase()
+        DatabaseService.initializeDataBase()
 
     def removeErrorMessages(self):
         self.subprocessCommandStringInputErrorLbl["text"] = ""
