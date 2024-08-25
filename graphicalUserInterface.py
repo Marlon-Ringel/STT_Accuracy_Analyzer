@@ -4,7 +4,7 @@ from tkinter import ttk
 import threading as th
 from databaseService import DatabaseService
 from configurationService import ConfigurationService
-
+from transcriptionService import TranscriptionService
 
 class GuiService(tk.Tk):
     def __init__(self):
@@ -189,8 +189,22 @@ class TestProgressPage(tk.Frame):
         self.guiService = guiService 
 
     def initializePage(self):
-        pass
+        th.Thread(target=self.startTranscriptionAndAnalysisProcess, daemon=True).start()
 
+    def startTranscriptionAndAnalysisProcess(self):  
+        try:
+            transcriptionService = TranscriptionService(guiConnection=self)
+        except IndexError:
+            self.updateTranscriptionProgressLbl("Transkription: Fehler. Lesen der Testdaten nicht möglich.") 
+            self.controlBtn.configure(text="Beenden", fg="red")
+            return
+        try:
+            transcriptionService.generateTranscriptions()
+        except RuntimeError:
+            self.updateTranscriptionProgressLbl("Transkription: Fehler. KI-Subprozess fehlerhaft.")
+            self.controlBtn.configure(text="Beenden", fg="red")
+            return
+        
     def updateTranscriptionProgressLbl(self, progressUpdate):
         self.transcriptionProgressLbl["text"] = progressUpdate
 

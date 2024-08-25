@@ -2,6 +2,8 @@ import pathlib
 import sqlite3
 import os
 from configurationService import ConfigurationService
+from testData import TestData
+from transcriptionResults import TranscriptionResults
 
 class DatabaseService:
     
@@ -58,8 +60,48 @@ class DatabaseService:
     def saveConfiguration(configuration : ConfigurationService):
         DatabaseService.insertDataIntoDataBase(configuration.getConfigurationAsSqliteQuery())
 
+    @staticmethod
+    def loadConfiguration():
+        conn = DatabaseService.getDataBaseConnection()
+        databaseTable = conn.execute("SELECT commandString, audioFilePath, tsvFilePath FROM Configuration")
+        for configurationData in databaseTable:
+            configuration = ConfigurationService(
+                configurationData[0],
+                configurationData[1],
+                configurationData[2]
+            )
+            conn.close()
+            return configuration
 
+    @staticmethod
+    def readTestDataFileIntoDatabase(tsvFilePath):
+        sqlQuery = "INSERT INTO TestData(originalSentance, audioFileName) VALUES"
+        with open(tsvFilePath) as tsvFile: 
+            tsvFile.readline()
+            currentLine = tsvFile.readline()
+            while currentLine != "":
+                currentLineSegments = currentLine.replace("\n", "").replace("\'", "").split("\t")
+                sqlQuery += f"('{currentLineSegments[1]}','{currentLineSegments[0]}'),"
+                currentLine = tsvFile.readline()
+        sqlQuery = sqlQuery[:-1] + ";"
+        DatabaseService.insertDataIntoDataBase(sqlQuery)
 
+    @staticmethod
+    def loadTestData():
+        ids, originalSentances, audioFileNames = [], [], []
+        conn = DatabaseService.getDataBaseConnection()
+        databaseTable = conn.execute("SELECT id, originalSentance, audioFileName FROM TestData")
+        for testData in databaseTable: 
+            ids.append(testData[0])
+            originalSentances.append(testData[1])
+            audioFileNames.append(testData[2])
+        conn.close()
+        return TestData(ids, originalSentances, audioFileNames)
+
+    @staticmethod
+    def saveTranscriptionResults(transcriptionResults : TranscriptionResults):
+        DatabaseService.insertDataIntoDataBase(transcriptionResults.getTranscriptionResultDataAsSqliteQuery())
+    
 
 
 
