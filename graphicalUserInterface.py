@@ -5,6 +5,7 @@ import threading as th
 from databaseService import DatabaseService
 from configurationService import ConfigurationService
 from transcriptionService import TranscriptionService
+from analysisService import AnalysisService
 
 class GuiService(tk.Tk):
     def __init__(self):
@@ -183,7 +184,7 @@ class TestProgressPage(tk.Frame):
         self.analysisProgressBar = ttk.Progressbar(self, length=1100, variable=self.analysisProgressBarStatus)
         self.analysisProgressBar.grid(row=5, column=0, columnspan=3, sticky="w", padx=(10,0), pady=(0,80))
 
-        self.controlBtn = tk.Button(self, text="Abbrechen", command=lambda : self.guiService.showPage(ResultPage))
+        self.controlBtn = tk.Button(self, text="Abbrechen", command=lambda : self.guiService.closeApplication())
         self.controlBtn.grid(row=6, column=0, sticky="w", padx=(10,0), pady=(0,10))
 
         self.guiService = guiService 
@@ -204,6 +205,9 @@ class TestProgressPage(tk.Frame):
             self.updateTranscriptionProgressLbl("Transkription: Fehler. KI-Subprozess fehlerhaft.")
             self.controlBtn.configure(text="Beenden", fg="red")
             return
+        analysisService = AnalysisService(guiConnection=self)
+        analysisService.performAnalysis()
+        self.controlBtn.configure(text="Ergebnisse Anzeigen", command=lambda : self.guiService.showPage(ResultPage))
         
     def updateTranscriptionProgressLbl(self, progressUpdate):
         self.transcriptionProgressLbl["text"] = progressUpdate

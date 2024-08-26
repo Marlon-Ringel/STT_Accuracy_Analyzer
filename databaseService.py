@@ -4,6 +4,7 @@ import os
 from configurationService import ConfigurationService
 from testData import TestData
 from transcriptionResults import TranscriptionResults
+from analysisResults import AnalysisResults
 
 class DatabaseService:
     
@@ -57,6 +58,11 @@ class DatabaseService:
         conn.close()
     
     @staticmethod
+    def resetDataBase():
+        if os.path.exists(DatabaseService.dataBasePath):
+            os.remove(DatabaseService.dataBasePath)
+
+    @staticmethod
     def saveConfiguration(configuration : ConfigurationService):
         DatabaseService.insertDataIntoDataBase(configuration.getConfigurationAsSqliteQuery())
 
@@ -102,12 +108,25 @@ class DatabaseService:
     def saveTranscriptionResults(transcriptionResults : TranscriptionResults):
         DatabaseService.insertDataIntoDataBase(transcriptionResults.getTranscriptionResultDataAsSqliteQuery())
     
-
-
-
+    @staticmethod
+    def loadTranscriptionResults():
+        conn = DatabaseService.getDataBaseConnection()
+        databaseTable = conn.execute('''SELECT 
+                                            TranscriptionResults.id AS id,
+                                            TestData.originalSentance AS originalSentance,
+                                            TranscriptionResults.transcript AS transcript
+                                        FROM 
+                                            TestData
+                                        INNER JOIN 
+                                            TranscriptionResults ON TranscriptionResults.originalSentaceId = TestData.id;''')
+        ids, originalSentance, transcript = [], [], []
+        for transcriptionResult in databaseTable:
+            ids.append(transcriptionResult[0])
+            originalSentance.append(transcriptionResult[1])
+            transcript.append(transcriptionResult[2])
+        conn.close()
+        return TranscriptionResults(ids=ids, originalSentences=originalSentance, transcripts=transcript)
 
     @staticmethod
-    def resetDataBase():
-        if os.path.exists(DatabaseService.dataBasePath):
-            os.remove(DatabaseService.dataBasePath)
-
+    def saveAnalysisResults(analysisResults : AnalysisResults):
+        DatabaseService.insertDataIntoDataBase(analysisResults.getAnalysisResultsAsSqliteQuery())

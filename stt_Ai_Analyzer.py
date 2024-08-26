@@ -4,4 +4,5 @@ def main():
     app = App()
     app.mainloop()
 
-main()
+if __name__ == "__main__":
+    main()
