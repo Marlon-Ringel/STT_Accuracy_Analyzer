@@ -225,7 +225,7 @@ class ResultPage(tk.Frame):
     def __init__(self, pageContainer, guiService):
         tk.Frame.__init__(self, pageContainer)
 
-        resultsTitleLbl = tk.Label(self, text="Ergebnisse Mittelwerte:")
+        resultsTitleLbl = tk.Label(self, text="Mittelwerte der Ergebnisse:")
         resultsTitleLbl.grid(row=0, column=0, sticky="w", padx=(10,0), pady=(80,0))
 
         self.werResultFrm = tk.Frame(self, width=360, height=30)
@@ -277,7 +277,8 @@ class ResultPage(tk.Frame):
         self.guiService = guiService
 
     def initializePage(self):
-        pass
+        self.setResultsDefaultVaules()
+        self.displayResults()
     
     def setResultsDefaultVaules(self):
         self.werResultLbl["text"] = f"WER: -1"
@@ -287,6 +288,12 @@ class ResultPage(tk.Frame):
         self.jwdResultLbl["text"] = f"Jaro: -1"
 
     def displayResults(self):
-        pass
+        data = DatabaseService.loadAnalysisResults().getAverageOfResults()
+ 
+        self.werResultLbl["text"] = f"WER: {data[0]}"
+        self.cerResultLbl["text"] = f"CER: {data[1]}"
+        self.merResultLbl["text"] = f"MER: {data[2]}"
+        self.wilResultLbl["text"] = f"WIL: {data[3]}"
+        self.jwdResultLbl["text"] = f"JWD: {data[4]}"
 
 

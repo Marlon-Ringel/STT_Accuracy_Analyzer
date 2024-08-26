@@ -130,3 +130,20 @@ class DatabaseService:
     @staticmethod
     def saveAnalysisResults(analysisResults : AnalysisResults):
         DatabaseService.insertDataIntoDataBase(analysisResults.getAnalysisResultsAsSqliteQuery())
+
+    @staticmethod
+    def loadAnalysisResults():
+        conn = DatabaseService.getDataBaseConnection()
+        dataBaseTable = conn.execute("SELECT wer, cer, mer, wil, jwd, idTestResult FROM AnalysisResults")
+        analysisResults = [[], [], [], [], [], [], []]
+        for analysisResult in dataBaseTable:
+            analysisResults[0].append(analysisResult[0])
+            analysisResults[1].append(analysisResult[1])
+            analysisResults[2].append(analysisResult[2])
+            analysisResults[3].append(analysisResult[3])
+            analysisResults[4].append(analysisResult[4])
+            analysisResults[5].append(analysisResult[5])
+        conn.close()
+        return AnalysisResults(analysisResults, True)
+
+ 
