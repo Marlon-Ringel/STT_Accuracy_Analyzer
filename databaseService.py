@@ -1,6 +1,8 @@
+import os
 import pathlib
 import sqlite3
-import os
+import openpyxl
+from datetime import datetime
 from configurationService import ConfigurationService
 from testData import TestData
 from transcriptionResults import TranscriptionResults
@@ -146,4 +148,48 @@ class DatabaseService:
         conn.close()
         return AnalysisResults(analysisResults, True)
 
- 
+    @staticmethod
+    def saveResultsAsExcel():
+        resultsPath = f"{pathlib.Path(__file__).parent.resolve()}/Results/"
+        if not os.path.exists(resultsPath):
+            os.mkdir(resultsPath)
+        DatabaseService.saveAnalysisResultsAsExcel(f"{resultsPath}Results_{datetime.now().strftime('%d.%m.%Y_%H.%M.%S')}.xlsx")
+
+    @staticmethod
+    def saveAnalysisResultsAsExcel(targetPath):
+        conn = DatabaseService.getDataBaseConnection()
+        dataBaseTable = conn.execute('''SELECT
+                                            TestData.originalSentance AS originalSentance,
+                                            TranscriptionResults.transcript AS transcript,
+                                            AnalysisResults.wer AS wer, 
+                                            AnalysisResults.cer AS cer, 
+                                            AnalysisResults.mer AS mer, 
+                                            AnalysisResults.wil AS wil,  
+                                            AnalysisResults.jwd AS jwd
+                                        FROM
+                                            TestData
+                                        INNER JOIN 
+                                            TranscriptionResults ON TranscriptionResults.originalSentaceId = TestData.id
+                                        INNER JOIN 
+                                            AnalysisResults ON AnalysisResults.idTestResult = TranscriptionResults.id;''') 
+
+        excelSheet = openpyxl.Workbook()
+        table = excelSheet.active
+
+        table.append(["Original Sentance", "Transcript", "Wer", "Cer", "Mer", "Wil", "jwd"])
+        
+        for row in dataBaseTable:
+            table.append(row)
+        conn.close()
+
+        averageResults = DatabaseService.loadAnalysisResults().getAverageOfResults()
+
+        table.append(["Average Results:", "", averageResults[0], averageResults[1], averageResults[2], averageResults[3], averageResults[4]])
+        excelSheet.save(targetPath)
+
+    @staticmethod
+    def exportAnalysisResultsAsExcel(targetPath):
+        print(targetPath)
+        os.remove(targetPath)
+        DatabaseService.saveAnalysisResultsAsExcel(targetPath) 
+        

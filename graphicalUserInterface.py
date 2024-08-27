@@ -207,6 +207,7 @@ class TestProgressPage(tk.Frame):
             return
         analysisService = AnalysisService(guiConnection=self)
         analysisService.performAnalysis()
+        DatabaseService.saveResultsAsExcel()
         self.controlBtn.configure(text="Ergebnisse Anzeigen", command=lambda : self.guiService.showPage(ResultPage))
         
     def updateTranscriptionProgressLbl(self, progressUpdate):
@@ -268,11 +269,11 @@ class ResultPage(tk.Frame):
         self.jwdResultLbl.grid(row=0, column=0, sticky="w", padx=(0,0), pady=(4,0))
 
 
-        exportResultAsExcelBtn = tk.Button(self, text="Ergebnisse Exportieren", command=lambda : print("Export"))
-        exportResultAsExcelBtn.grid(row=2, column=2, sticky="w", padx=(0,0), pady=(15,0))
+        exportResultAsExcelBtn = tk.Button(self, text="Ergebnisse Exportieren", command=lambda : self.exportResultExcel())
+        exportResultAsExcelBtn.grid(row=3, column=0, sticky="w", padx=(10,0), pady=(60,0))
 
         closeAppBtn = tk.Button(self, text="Fertigstellen", command=lambda : self.guiService.closeApplication())
-        closeAppBtn.grid(row=3, column=0, sticky="w", padx=(10,0), pady=(60,0))
+        closeAppBtn.grid(row=3, column=0, sticky="w", padx=(200,0), pady=(60,0))
     
         self.guiService = guiService
 
@@ -296,4 +297,7 @@ class ResultPage(tk.Frame):
         self.wilResultLbl["text"] = f"WIL: {data[3]}"
         self.jwdResultLbl["text"] = f"JWD: {data[4]}"
 
-
+    def exportResultExcel(self):
+        filePath = filedialog.asksaveasfile(initialfile="Results.xlsx", defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
+        if filePath: 
+            DatabaseService.exportAnalysisResultsAsExcel(filePath.name)
