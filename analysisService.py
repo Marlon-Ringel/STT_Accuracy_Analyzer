@@ -14,7 +14,6 @@ class AnalysisService:
 
         for step in range(0, totalAnalysisSteps):
             self.sendAnalysisProgressUpdateToGuiBar(step, totalAnalysisSteps)        
-            
             calculationResults = self.calculateAnalysisMetrics(self.transcriptionResults.getOriginalSentence(step), self.transcriptionResults.getTranscript(step))
             calculationResults.append(self.transcriptionResults.getId(step))
             self.analysisResults.addAnalysisResult(calculationResults)

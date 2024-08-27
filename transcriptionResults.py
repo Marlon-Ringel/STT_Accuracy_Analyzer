@@ -26,4 +26,3 @@ class TranscriptionResults:
 
     def len(self):
         return len(self.transcripts)
-        

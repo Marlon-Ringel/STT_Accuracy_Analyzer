@@ -3,12 +3,10 @@ import pathlib
 import subprocess
 
 class ConfigurationService:
-
     def __init__(self, subprocessCommandString, audioFilesPath, tsvFilePath):
         self.subprocessCommandString = subprocessCommandString
         self.audioFilesPath = audioFilesPath
         self.tsvFilePath = tsvFilePath
-        
         self.configurationError = [0, 0, 0, 0] 
         '''
         #For All:   0 = No Error. 
@@ -84,7 +82,4 @@ class ConfigurationService:
             return sqlQuery
         sqlQuery += f"('{self.subprocessCommandString}', '{self.audioFilesPath}', '{self.tsvFilePath}');"
         return sqlQuery
-
-
-
     
