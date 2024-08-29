@@ -11,7 +11,7 @@ class GuiService(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
 
-        self.title("STT Ai Analyzer")
+        self.title("Speech to Text Accuracy Analyzer")
         pageContainer = tk.Frame(self)
         pageContainer.pack(side = "top", fill = "both", expand = True)
 
