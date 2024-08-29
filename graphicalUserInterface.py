@@ -40,7 +40,7 @@ class InputPage(tk.Frame):
         tk.Frame.__init__(self, pageContainer)
         
         # Subprocess Command String Input
-        subprocessCommandStringInputLbl = tk.Label(self, text="Bitte den Terminal Befehl zum Starten des KI-Modell-Subprozesses als durch Kommata separierten Text eingeben (Benötigt).")
+        subprocessCommandStringInputLbl = tk.Label(self, text="Bitte den Terminal Befehl zum Starten der zu testenden STT-Anwendung als durch Kommas separierten Text eingeben (Benötigt).")
         subprocessCommandStringInputLbl.grid(row=0, column=0, columnspan=51, sticky="w", padx=(10,0), pady=(15,0))
 
         self.subprocessCommandStringInputEtr = tk.Entry(self, width=100)

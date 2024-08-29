@@ -17,13 +17,13 @@ class TranscriptionService:
 
         for counter in range(0, totalTranscriptionSteps):
             self.sendTranscriptionProgressUpdateToGuiBar(counter, totalTranscriptionSteps)
-            transcript = self.generateTranscriptionsViaSubprocess(self.configuration.getSubprocessCommandString(), f"{self.configuration.getAudioFilesPath()}/{self.testData.getAudioFileName(counter)}")
+            transcript = self.generateTranscriptionViaSubprocess(self.configuration.getSubprocessCommandString(), f"{self.configuration.getAudioFilesPath()}/{self.testData.getAudioFileName(counter)}")
             self.TranscriptionResults.addTranscriptionResult(self.testData.getId(counter), transcript)
             
         DatabaseService.saveTranscriptionResults(self.TranscriptionResults)
         self.sendTranscriptionProgressUpdateToGuiLbl("Transkription: Abgeschlossen.")
 
-    def generateTranscriptionsViaSubprocess(self, commandString, audioFilePath):
+    def generateTranscriptionViaSubprocess(self, commandString, audioFilePath):
         subprocessResult = subprocess.run(commandString.split(", "), capture_output=True, text=True, input=audioFilePath)
         if subprocessResult.returncode != 0:
             print(f"Error in transcription Subprocess\nSubprocess returncode = {subprocessResult.returncode}\nSubprocess stderr = {subprocessResult.stderr}")
