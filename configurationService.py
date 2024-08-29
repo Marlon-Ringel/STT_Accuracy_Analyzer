@@ -76,10 +76,9 @@ class ConfigurationService:
         sqlQuery = f"INSERT INTO Configuration(commandString, audioFilePath, tsvFilePath) VALUES"
 
         if self.audioFilesPath == "" and self.tsvFilePath == "": 
-            defaultAudioFilesPath = f"{pathlib.Path(__file__).parent.resolve()}/Data/SampleTestData/CommonVoice_TestDataSet/AudioFiles"
-            defaultTsvFilePath = f"{pathlib.Path(__file__).parent.resolve()}/Data/SampleTestData/CommonVoice_TestDataSet/dataSet.tsv"
+            defaultAudioFilesPath = f"{pathlib.Path(__file__).parent.resolve()}/Data/TestData/CommonVoice/AudioFiles"
+            defaultTsvFilePath = f"{pathlib.Path(__file__).parent.resolve()}/Data/TestData/CommonVoice/dataSet.tsv"
             sqlQuery += f"('{self.subprocessCommandString}', '{defaultAudioFilesPath}', '{defaultTsvFilePath}');"
             return sqlQuery
         sqlQuery += f"('{self.subprocessCommandString}', '{self.audioFilesPath}', '{self.tsvFilePath}');"
         return sqlQuery
-    
