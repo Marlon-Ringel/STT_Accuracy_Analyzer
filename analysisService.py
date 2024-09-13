@@ -26,7 +26,7 @@ class AnalysisService:
                 jiwer.cer(originalText, transcript),
                 jiwer.mer(originalText, transcript),
                 jiwer.wil(originalText, transcript),
-                jwd.jaro_winkler_metric(originalText, transcript)]
+                1-jwd.jaro_winkler_metric(originalText, transcript)]
     
     def sendAnalysisProgressUpdateToGuiLbl(self, progressUpdate):
         self.guiConnection.updateAnalysisProgressLbl(progressUpdate)
