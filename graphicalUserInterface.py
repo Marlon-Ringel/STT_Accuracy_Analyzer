@@ -8,6 +8,7 @@ from transcriptionService import TranscriptionService
 from analysisService import AnalysisService
 
 class GuiService(tk.Tk):
+    # Initializes the GUI and the pages of the GUI. Sets handler function for the close window event. 
     def __init__(self):
         tk.Tk.__init__(self)
 
@@ -26,16 +27,26 @@ class GuiService(tk.Tk):
 
         self.protocol("WM_DELETE_WINDOW", self.closeApplication)  
 
+    # Displays a specified page in the application window.
+    # 
+    # Input: 
+    # pageName: A String containing the name of the page that should be displayed.  
     def showPage(self, pageName):
         page = self.pages[pageName]
         page.initializePage()
         page.tkraise()
 
+    # Handler function for the close window event. Resets the database and closes the application.  
     def closeApplication(self):
         DatabaseService.resetDataBase()
         self.destroy()
 
 class InputPage(tk.Frame):
+    # Initializes the elements of the GUI for the InputPage.
+    # 
+    # Input: 
+    # pageContainer: The tkinter Frame Object in which the page is contained.  
+    # guiService: The GUIService Object.  
     def __init__(self, pageContainer, guiService): 
         tk.Frame.__init__(self, pageContainer)
         
@@ -85,14 +96,22 @@ class InputPage(tk.Frame):
 
         self.guiService = guiService
     
+    # Initialization of InputPage. Deletes the database and recreates it. 
     def initializePage(self):
         DatabaseService.resetDataBase()
         DatabaseService.initializeDataBase()
 
+    # Invokes the input validation process. Deactivates the "Testprozess Starten" Button and displays a message to inform the 
+    # user that he has to wait until the validation is complete. Starts the validation Process in a new thread.  
     def validateInput(self):
         self.toggleStartTestProcessBtnAndMessage()
         th.Thread(target=self.performValidation, daemon=True).start()
 
+    # Removes all error messages if present. Initializes a ConfigurationService Objecct and passes it the configuration data from the GUI. Uses 
+    # the ConfigurationService Object to conduct the validation. 
+    # If the validation failed: Requests the Configuration Error from ConfigurationService Objekt and displays corresponding error messages. Also
+    # reactivates the "Testprozess Starten" Button. 
+    # If the validation was successful: Saves the configuration data in the Database and displays the TestProgressPage.  
     def performValidation(self):
         self.removeErrorMessages()
         config = ConfigurationService(self.subprocessCommandStringInputEtr.get(),
@@ -105,6 +124,9 @@ class InputPage(tk.Frame):
             DatabaseService.saveConfiguration(config)
             self.guiService.showPage(TestProgressPage)
 
+    # Checks the state of the "Testprozess Starten" button. 
+    # If the button is disabled: Sets the state to normal (enabled) and removes the input validation message. 
+    # If the button is not disabled: Sets the state to disabled and displays the input validation message. 
     def toggleStartTestProcessBtnAndMessage(self):
         if self.startTestProcessBtn["state"] == "disabled":
             self.startTestProcessBtn.configure(state="normal")
@@ -113,11 +135,16 @@ class InputPage(tk.Frame):
             self.startTestProcessBtn.configure(state="disabled")
             self.inputValidationLbl["text"] = "Überprüfung der eingegebenen Daten. Bitte Warten …"
 
+    # Removes all error messages on the InputPage. 
     def removeErrorMessages(self):
         self.subprocessCommandStringInputErrorLbl["text"] = ""
         self.customTestDataAudioFilesPathSelectionErrorLbl["text"] = ""
         self.customTestDataTsvFilePathSelectionErrorLbl["text"] = ""
 
+    # Uses the error codes in the errorList to display specific error messages on the InputPage.
+    # 
+    # Input: 
+    # errorList: List containing error codes.  
     def displayErrorMessages(self, errorList):
         if errorList[0] == 1:
             self.updateSubprocessCommandStringInputError("Fehler: Kein Terminal Befehl zum Starten des KI-Modell-Subprozesses eingegeben.")
@@ -140,21 +167,37 @@ class InputPage(tk.Frame):
         if errorList[3] == 1:
             self.updateCustomTestDataTsvFilePathSelectionError("Fehler: Der ausgewählte Pfad existiert nicht.")  
 
+    # Displays a given error message below the command string entry field.
+    # 
+    # Input:
+    # errorText: String containing the error description. 
     def updateSubprocessCommandStringInputError(self, errorText):
         self.subprocessCommandStringInputErrorLbl["text"] = errorText
 
+    # Displays a given error message below the audio files path entry field.
+    # 
+    # Input:
+    # errorText: String containing the error description. 
     def updateCustomTestDataAudioFilesPathSelectionError(self, errorText):
         self.customTestDataAudioFilesPathSelectionErrorLbl["text"] = errorText
 
+    # Displays a given error message below the tsv file path entry field.
+    # 
+    # Input:
+    # errorText: String containing the error description. 
     def updateCustomTestDataTsvFilePathSelectionError(self, errorText):
         self.customTestDataTsvFilePathSelectionErrorLbl["text"] = errorText
 
+    # Opens a system dialog where the user can choose a folder. 
+    # Displays the selected path to the folder in the audio files path entry field. 
     def selectCustomTestDataAudioFilesPath(self):
         folderPath = filedialog.askdirectory()
         self.customTestDataAudioFilesPathSelectionEtr.delete(0, tk.END)
         if folderPath: 
             self.customTestDataAudioFilesPathSelectionEtr.insert(0, folderPath)
 
+    # Opens a system dialog where the user can choose a file. 
+    # Displays the selected path to the folder in the tsv file path entry field. 
     def selectCustomTestDataTsvFilePath(self):
         filePath = filedialog.askopenfile(
             filetypes=(
@@ -167,6 +210,11 @@ class InputPage(tk.Frame):
             self.customTestDataTsvFilePathSelectionEtr.insert(0, filePath.name)
 
 class TestProgressPage(tk.Frame):
+    # Initializes the elements of the GUI for the TestProgressPage.
+    # 
+    # Input: 
+    # pageContainer: The tkinter Frame Object in which the page is contained.  
+    # guiService: The GUIService Object.  
     def __init__(self, pageContainer, guiService):
         tk.Frame.__init__(self, pageContainer)
 
@@ -188,10 +236,14 @@ class TestProgressPage(tk.Frame):
         self.controlBtn.grid(row=6, column=0, sticky="w", padx=(10,0), pady=(0,10))
 
         self.guiService = guiService 
-
+    
+    # Initialization of TestProgressPage. Starts the test process in a separate thread. 
     def initializePage(self):
         th.Thread(target=self.startTranscriptionAndAnalysisProcess, daemon=True).start()
 
+    # Initializes the TranscriptionService Object and starts the transcription Progress. Initializes the AnalysisService and 
+    # starts the analysis process. Afterwards exports the test process results as excel table to the application directory 
+    # and displays the ResultPage. 
     def startTranscriptionAndAnalysisProcess(self):  
         try:
             transcriptionService = TranscriptionService(guiConnection=self)
@@ -209,20 +261,41 @@ class TestProgressPage(tk.Frame):
         analysisService.performAnalysis()
         DatabaseService.saveResultsAsExcel()
         self.controlBtn.configure(text="Ergebnisse Anzeigen", command=lambda : self.guiService.showPage(ResultPage))
-        
+
+    # Displays a given status update above the transcription progress bar.
+    # 
+    # Input:
+    # progressUpdate: String containing information about the progress of the transcription process.      
     def updateTranscriptionProgressLbl(self, progressUpdate):
         self.transcriptionProgressLbl["text"] = progressUpdate
 
+    # Updates the transcription progress bar according to the progressUpdate.
+    # 
+    # Input:
+    # progressUpdate: The progress of the transcription process as integer.  
     def setTranscriptionProgressStatus(self, progressUpdate):
         self.transcriptionProgressBarStatus.set(progressUpdate)
-
+    
+    # Displays a given status update above the analysis progress bar.
+    # 
+    # Input:
+    # progressUpdate: String containing information about the progress of the analysis process. 
     def updateAnalysisProgressLbl(self, progressUpdate):
         self.analysisProgressLbl["text"] = progressUpdate
     
+    # Updates the analysis progress bar according to the progressUpdate.
+    # 
+    # Input:
+    # progressUpdate: The progress of the analysis process as integer.
     def setAnalysisProgressStatus(self, progressUpdate):
         self.analysisProgressBarStatus.set(progressUpdate)
 
 class ResultPage(tk.Frame):
+    # Initializes the elements of the GUI for the ResultPage.
+    # 
+    # Input: 
+    # pageContainer: The tkinter Frame Object in which the page is contained.  
+    # guiService: The GUIService Object.  
     def __init__(self, pageContainer, guiService):
         tk.Frame.__init__(self, pageContainer)
 
@@ -276,11 +349,13 @@ class ResultPage(tk.Frame):
         closeAppBtn.grid(row=3, column=0, sticky="w", padx=(200,0), pady=(60,0))
     
         self.guiService = guiService
-
+    
+    # Initialization of ResultPage. Sets the default values for the result display. Displays the actual results. 
     def initializePage(self):
         self.setResultsDefaultVaules()
         self.displayResults()
     
+    # Displays the default values (all "-1") for the result display. 
     def setResultsDefaultVaules(self):
         self.werResultLbl["text"] = f"WER: -1"
         self.cerResultLbl["text"] = f"CER: -1"
@@ -288,6 +363,7 @@ class ResultPage(tk.Frame):
         self.wilResultLbl["text"] = f"WIL: -1"
         self.jwdResultLbl["text"] = f"Jaro: -1"
 
+    # Requests the results from DatabaseService. Displays the results on ResultPage.
     def displayResults(self):
         data = DatabaseService.loadAnalysisResults().getAverageOfResults()
  
@@ -297,7 +373,9 @@ class ResultPage(tk.Frame):
         self.wilResultLbl["text"] = f"WIL: {data[3]}"
         self.jwdResultLbl["text"] = f"JWD: {data[4]}"
 
+    # Displays a system dialog where the user can choose a directory to export the results. Exports the results to 
+    # the path the user choose.
     def exportResultExcel(self):
         filePath = filedialog.asksaveasfile(initialfile="Results.xlsx", defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
         if filePath: 
-            DatabaseService.exportAnalysisResultsAsExcel(filePath.name)
+            DatabaseService.exportTestResultsAsExcel(filePath.name)
