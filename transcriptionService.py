@@ -2,20 +2,23 @@ import subprocess
 from databaseService import DatabaseService
 from transcriptionResults import TranscriptionResults
 
+# Class that implements functionality to generate transcripts based on the test dataset.
 class TranscriptionService:
-    # Initializes the TranscriptionService Object. Requests the configuration data from the database and stores it in a 
-    # class attribute alongside the guiConnection. Updates GUI that test dataset will be read into the database. Invokes
-    # reading of test dataset into database. Requests test dataset from database and stores it in class attribute. 
-    # Initializes TranscriptionResults Object. Updates GUI that was read successful.
+
+    # Initialize the TranscriptionService Object. Request the configuration data from the database and store it in the 
+    # class attributes alongside the TestProgressPage Object (guiConnection). Send a Progress update to the GUI that 
+    # process of reading the test dataset into the database has started. Invoke process of reading the test dataset into the database. 
+    # Request test dataset from database and store it in the class attributes. Initialize TranscriptionResults Object. 
+    # Send a progress update to the GUI that the test dataset was successfully read into the database.
     #
     # Class attributes: 
     # configuration: ConfigurationService Object containing the configuration data. 
-    # guiConnection: Connection used to update GUI. 
+    # guiConnection: TestProgressPage Object used to update GUI. 
     # testData: TestData Object containing the test dataset. 
-    # transcriptionResults: TranscriptionResults Object for storage of transcription results. 
+    # transcriptionResults: TranscriptionResults Object for storage of the transcription results. 
     #  
     # Input:
-    # guiConnection: Connection used to update GUI.
+    # guiConnection: TestProgressPage Object used to update GUI. 
     def __init__(self, guiConnection):
         self.configuration = DatabaseService.loadConfiguration()
         self.guiConnection = guiConnection
@@ -25,8 +28,8 @@ class TranscriptionService:
         self.transcriptionResults = TranscriptionResults()
         self.sendTranscriptionProgressUpdateToGuiLbl("Transkription: Ausstehend.")
 
-    # Calculates the number of transcription steps. For every step, sends a progress update to GUI, generates a transcript
-    # and stores it in the transcriptionResults class attribute. When all steps are done. Stores the transcription results
+    # Calculate the number of transcription steps. For every step, send a progress update to GUI, generate a transcript
+    # and store it in the transcriptionResults class attribute. When all steps are completed. Store the transcription results
     # in the database and send progress update to GUI that transcription process is finished. 
     def generateTranscriptions(self):
         totalTranscriptionSteps = self.testData.len()
@@ -39,8 +42,8 @@ class TranscriptionService:
         DatabaseService.saveTranscriptionResults(self.transcriptionResults)
         self.sendTranscriptionProgressUpdateToGuiLbl("Transkription: Abgeschlossen.")
 
-    # Starts the subprocess using the command string and passing the audioFilePath to it. Takes the generated transcription 
-    # from the subprocess and returns it.
+    # Start the transcription subprocess using the command string and pass the path of the audio file that should be transcribed 
+    # to it. Take the generated transcription from the transcription subprocess and return it.
     # 
     # Input: 
     # commandString: String containing the command to start the transcription subprocess. 
@@ -55,18 +58,19 @@ class TranscriptionService:
             raise RuntimeError(f"Error in transcription Subprocess\nSubprocess returncode = {subprocessResult.returncode}\nSubprocess stderr = {subprocessResult.stderr}")
         return subprocessResult.stdout.replace("\'", "")
     
-    # Updates the text above the transcription porgress bar of the GUI.
+    # Update the text above the transcription progress bar on the test-progress-page.
     # 
     # Input: 
-    # progressUpdate: String containing the current step and the number of all steps.   
+    # String containing the text that should be displayed above the transcription progress bar.    
     def sendTranscriptionProgressUpdateToGuiLbl(self, progressUpdate):
         self.guiConnection.updateTranscriptionProgressLbl(progressUpdate)
-    
-    # Updates the text above the transcription progress bar and the progress bar itself.
+        
+    # Update the text above the transcription progress bar on the test-progress-page. Calculate the percentage of the progress
+    # of the transcription process and use it to update the transcription progress bar.
     # 
     # Input: 
-    # currentStep: The number of the current step as integer.
-    # totalSteps: The total number of required steps.     
+    # currentStep: The number of the current transcription step as integer.
+    # totalSteps: The total number of required transcription steps as integer.      
     def sendTranscriptionProgressUpdateToGuiBar(self, currentStep, totalSteps):
         self.sendTranscriptionProgressUpdateToGuiLbl(f"Transkriptionsschritt: {currentStep+1} / {totalSteps}")
         self.guiConnection.setTranscriptionProgressStatus(int((currentStep+1)/totalSteps*100))

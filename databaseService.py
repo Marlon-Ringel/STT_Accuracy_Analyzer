@@ -8,11 +8,12 @@ from testData import TestData
 from transcriptionResults import TranscriptionResults
 from analysisResults import AnalysisResults
 
+# Class that implements functionality to store and retrieve data from the database and also manage the database. 
 class DatabaseService:
-    # Path to database file. 
+    # String containing the path to the database file. 
     dataBasePath = f"{pathlib.Path(__file__).parent.resolve()}/Data/InternalData/database.db" 
 
-    # Establishes a connection to the database and returns it.
+    # Establishe a connection to the database and return it.
     # 
     # Return:
     # Connection to database as sqlite3.Connection Object.
@@ -20,7 +21,7 @@ class DatabaseService:
     def getDataBaseConnection():
         return sqlite3.connect(DatabaseService.dataBasePath)
 
-    # Creates the required database tables. 
+    # Create the required database tables inside the database. 
     @staticmethod
     def initializeDataBase():
         conn = DatabaseService.getDataBaseConnection()
@@ -50,17 +51,17 @@ class DatabaseService:
              mer REAL NOT NULL, 
              wil REAL NOT NULL, 
              jwd REAL NOT NULL,
-             idTestResult INTEGER NOT NULL,
-             CONSTRAINT fk_TestResults
-                FOREIGN KEY (idTestResult)
-                REFERENCES TestResults(id));''')
+             idTranscriptionResult INTEGER NOT NULL,
+             CONSTRAINT fk_transcriptionResults
+                FOREIGN KEY (idTranscriptionResult)
+                REFERENCES TranscriptionResults(id));''')
         conn.commit()
         conn.close()
 
-    # Takes a SQLite-Query-String containing an Insert query and executes it on the database.
+    # Take a SQLite-Query-String containing an insert query and execute it on the database.
     # 
     # Input:
-    # insertQuery: SQLite-Query-String containing an Insert query.  
+    # insertQuery: SQLite-Query-String containing an insert query.  
     @staticmethod
     def insertDataIntoDataBase(insertQuery):
         conn = DatabaseService.getDataBaseConnection()
@@ -68,21 +69,21 @@ class DatabaseService:
         conn.commit()
         conn.close()
     
-    # Checks if a database file exists and if this is the case, deletes it. 
+    # Checks if a database file exists and in this case, delete it. 
     @staticmethod
     def resetDataBase():
         if os.path.exists(DatabaseService.dataBasePath):
             os.remove(DatabaseService.dataBasePath)
 
-    # Gets the user configuration and saves it in the database.
+    # Take the configuration data and save it in the database.
     # 
     # Input: 
-    # configuration: ConfigurationService Object containing the user configuration data. 
+    # configuration: ConfigurationService Object containing the configuration data. 
     @staticmethod
     def saveConfiguration(configuration : ConfigurationService):
         DatabaseService.insertDataIntoDataBase(configuration.getConfigurationAsSqliteQuery())
 
-    # Loads the configuration data from the database and returns it as a ConfigurationService Object.
+    # Load the configuration data from the database and return it.
     # 
     # Return:
     # Configuration Data as ConfigurationService Object. 
@@ -99,11 +100,11 @@ class DatabaseService:
             conn.close()
             return configuration
 
-    # Uses the provided TSV file to format the test data as an SQLite query. 
-    # Afterwards executes the query on the database storing the test data in it.
+    # Use the provided TSV file to read and format the test dataset as an SQLite query. 
+    # Afterwards execute the query on the database storing the test dataset in it.
     # 
     # Input:
-    # tsvFilePath: Path to the TSV File containing information about the test data.   
+    # tsvFilePath: String containing the path to the TSV file with the labels of the test dataset.   
     @staticmethod
     def readTestDataFileIntoDatabase(tsvFilePath):
         sqlQuery = "INSERT INTO TestData(originalSentance, audioFileName) VALUES"
@@ -117,10 +118,10 @@ class DatabaseService:
         sqlQuery = sqlQuery[:-1] + ";"
         DatabaseService.insertDataIntoDataBase(sqlQuery)
    
-    # Loads the test data from the database and returns it in a testData Object.
+    # Load the test dataset from the database and returns it.
     # 
     # Return:
-    # Test data as testData Object. 
+    # Test dataset as testData Object. 
     @staticmethod
     def loadTestData():
         ids, originalSentances, audioFileNames = [], [], []
@@ -133,7 +134,7 @@ class DatabaseService:
         conn.close()
         return TestData(ids, originalSentances, audioFileNames)
 
-    # Saves the given transcription results in the database.
+    # Save the given transcription results in the database.
     # 
     # Input: 
     # Transcription Results as TranscriptionResults Object.  
@@ -141,7 +142,7 @@ class DatabaseService:
     def saveTranscriptionResults(transcriptionResults : TranscriptionResults):
         DatabaseService.insertDataIntoDataBase(transcriptionResults.getTranscriptionResultDataAsSqliteQuery())
     
-    # Loads the transcription results from the database and returns it in a TranscriptionResults Object.
+    # Load the transcription results from the database and return it.
     # 
     # Return:
     # Transcription results as TranscriptionResults Object. 
@@ -164,7 +165,7 @@ class DatabaseService:
         conn.close()
         return TranscriptionResults(ids=ids, originalSentences=originalSentance, transcripts=transcript)
 
-    # Saves the given analysis results in the database.
+    # Save the given analysis results in the database.
     # 
     # Input: 
     # Transcription Results as AnalysisResults Object.
@@ -172,14 +173,14 @@ class DatabaseService:
     def saveAnalysisResults(analysisResults : AnalysisResults):
         DatabaseService.insertDataIntoDataBase(analysisResults.getAnalysisResultsAsSqliteQuery())
 
-    # Loads the analysis results from the database and returns it in a AnalysisResults Object.
+    # Load the analysis results from the database and return it.
     # 
     # Return:
     # Analysis results as AnalysisResults Object.
     @staticmethod
     def loadAnalysisResults():
         conn = DatabaseService.getDataBaseConnection()
-        dataBaseTable = conn.execute("SELECT wer, cer, mer, wil, jwd, idTestResult FROM AnalysisResults")
+        dataBaseTable = conn.execute("SELECT wer, cer, mer, wil, jwd, idTranscriptionResult FROM AnalysisResults")
         analysisResults = [[], [], [], [], [], [], []]
         for analysisResult in dataBaseTable:
             analysisResults[0].append(analysisResult[0])
@@ -191,7 +192,7 @@ class DatabaseService:
         conn.close()
         return AnalysisResults(analysisResults, True)
 
-    # Saves the test results as Excel file in the default results directory. 
+    # Save the test results as Excel file in the default results directory. 
     @staticmethod
     def saveResultsAsExcel():
         resultsPath = f"{pathlib.Path(__file__).parent.resolve()}/Results/"
@@ -199,11 +200,11 @@ class DatabaseService:
             os.mkdir(resultsPath)
         DatabaseService.saveTestResultsAsExcel(f"{resultsPath}Results_{datetime.now().strftime('%d.%m.%Y_%H.%M.%S')}.xlsx")
 
-    # Loads the test results from the database and formats it as an Excel table. Stores the Excel Table at the
+    # Load the test results from the database and format it as an Excel table. Store the Excel table at the
     # location specified in targetPath.
     # 
     # Input: 
-    # targetPath: Path to the directory where the results should be stored.  
+    # targetPath: String containing the path to the directory where the results should be stored.  
     @staticmethod
     def saveTestResultsAsExcel(targetPath):
         conn = DatabaseService.getDataBaseConnection()
@@ -220,7 +221,7 @@ class DatabaseService:
                                         INNER JOIN 
                                             TranscriptionResults ON TranscriptionResults.originalSentaceId = TestData.id
                                         INNER JOIN 
-                                            AnalysisResults ON AnalysisResults.idTestResult = TranscriptionResults.id;''') 
+                                            AnalysisResults ON AnalysisResults.idTranscriptionResult = TranscriptionResults.id;''') 
 
         excelSheet = openpyxl.Workbook()
         table = excelSheet.active
@@ -236,13 +237,13 @@ class DatabaseService:
         table.append(["Average Results:", "", averageResults[0], averageResults[1], averageResults[2], averageResults[3], averageResults[4]])
         excelSheet.save(targetPath)
 
-    # Saves the test results as excel table at target path.
+    # Delete the file created by the GUI file dialog at the given target path. 
+    # Save the test results as an Excel table at the given target path.
     # 
     # Input: 
-    # targetPath: Path to the directory where the results should be stored.  
+    # targetPath: String containing the path to the directory where the test results should be stored.
     @staticmethod
     def exportTestResultsAsExcel(targetPath):
-        print(targetPath)
         os.remove(targetPath)
         DatabaseService.saveTestResultsAsExcel(targetPath) 
         
