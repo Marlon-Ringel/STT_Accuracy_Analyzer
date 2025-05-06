@@ -96,3 +96,6 @@ Nach dem Abschluss des Testprozesses können die Ergebnisse über den „Ergebni
 Die Anzeige umfasst dabei die Mittelwerte der Auswertungsmetriken.
 Die detaillierten Testergebnisse wurden an diesem Punkt bereits automatisiert als Excel-Tabelle in das Anwendungsverzeichnis exportiert.
 Es besteht die Möglichkeit, die Ergebnisse über den „Ergebnisse exportieren“ Button in ein gewünschtes Verzeichnis exportieren zu lassen.
+
+## Dokumentation
+Eine ausführliche Dokumentation des vorliegenden Prototyps finden Sie in Kapitel 6 und 8 meiner Bachelorarbeit.
